@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1d4ed8">
+  <title>GrantConnect</title>
+  <style>
+:root{--bg:#f4f7fc;--card:#fff;--text:#0f172a;--muted:#64748b;--primary:#1d4ed8;--primary2:#3b82f6;--soft:#e8efff;--border:#e2e8f0;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--radius:16px;--shadow:0 4px 18px rgba(15,23,42,.06);--nav-h:64px;--input:#fff}
+[data-theme=dark]{--bg:#0b1220;--card:#111a2e;--text:#e6edf8;--muted:#94a3b8;--soft:#16264a;--border:#1f2c47;--shadow:none;--input:#0d1628;--primary:#4f8cff}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+a{color:var(--primary);text-decoration:none}
+h1,h2,h3,h4{margin:0 0 6px}
+h1{font-size:22px}h2{font-size:18px}h3{font-size:16px}
+p{margin:0 0 8px}
+.muted{color:var(--muted)}small{font-size:12px}
+.urgent{color:var(--bad);font-weight:600}
+.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.wrap{flex-wrap:wrap}.grow{flex:1;min-width:0}
+.stack>*+*{margin-top:14px}
+.hide{display:none!important}
+svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* layout */
+.sidebar{display:none}
+.main{padding:16px 16px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom))}
+.content{max-width:1100px;margin:0 auto}
+.bottomnav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--card);border-top:1px solid var(--border);display:flex;z-index:50}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font-size:11px;position:relative}
+.nav-item.active{color:var(--primary)}
+.nav-item.active svg{background:var(--soft);border-radius:10px;padding:4px;width:32px;height:28px;box-sizing:border-box}
+.nav-badge{position:absolute;top:6px;left:calc(50% + 6px);background:var(--bad);color:#fff;border-radius:99px;font-size:10px;min-width:16px;height:16px;line-height:16px;text-align:center;font-weight:700;padding:0 4px}
+.nav-badge:empty{display:none}
+@media(min-width:768px){
+  .sidebar{display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;width:232px;background:var(--card);border-right:1px solid var(--border);padding:20px 14px;z-index:40}
+  .sidebar .brand{margin-bottom:22px}
+  .sidebar .nav-item{flex:none;flex-direction:row;justify-content:flex-start;gap:12px;font-size:14px;padding:11px 12px;border-radius:12px;margin-bottom:4px}
+  .sidebar .nav-item.active{background:var(--soft)}
+  .sidebar .nav-item.active svg{background:none;padding:0;width:20px;height:20px}
+  .sidebar .nav-badge{position:static;margin-left:auto}
+  .main{margin-left:232px;padding:28px}
+  .bottomnav{display:none}
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--text)}
+.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;display:grid;place-items:center;font-weight:800}
+.side-foot{margin-top:auto;border-top:1px solid var(--border);padding-top:12px}
+
+/* base components */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.card h3{margin-bottom:10px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}
+@media(min-width:768px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.kpis{grid-template-columns:repeat(4,1fr)}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--primary);color:#fff;border:0;border-radius:12px;padding:11px 16px;font:inherit;font-weight:600;cursor:pointer;text-align:center}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:var(--soft);color:var(--primary)}
+.btn.danger{background:var(--bad)}.btn.ok{background:var(--ok)}.btn.warn{background:var(--warn)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:10px}.btn.block{width:100%}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.iconbtn{background:var(--card);border:1px solid var(--border);color:var(--text);width:42px;height:42px;border-radius:50%;display:grid;place-items:center;position:relative;cursor:pointer}
+.iconbtn .dotb{position:absolute;top:-3px;right:-3px;background:var(--bad);color:#fff;font-size:10px;min-width:17px;height:17px;border-radius:99px;display:grid;place-items:center;font-weight:700}
+label{display:block;font-size:13px;font-weight:600;margin:0 0 5px}
+.input,select,textarea{width:100%;background:var(--input);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:11px 12px;font:inherit}
+textarea{resize:vertical;min-height:90px}
+.input:focus,select:focus,textarea:focus{outline:2px solid var(--primary2);outline-offset:0}
+.field{margin-bottom:12px}
+.search{position:relative}.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}.search .input{padding-left:40px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 14px;border-radius:99px;font-size:13px;cursor:pointer;font-weight:600}
+.chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.badge.gray{background:#e2e8f0;color:#334155}.badge.blue{background:#dbeafe;color:#1d4ed8}.badge.amber{background:#fef3c7;color:#b45309}.badge.green{background:#dcfce7;color:#15803d}.badge.red{background:#fee2e2;color:#b91c1c}
+.tag{display:inline-block;background:var(--soft);color:var(--primary);font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:6px}
+.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;display:inline-grid;place-items:center;font-weight:700;object-fit:cover;flex:none}
+.avatar.lg{width:78px;height:78px;font-size:24px}.avatar.sm{width:36px;height:36px;font-size:13px}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.page-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
+
+/* dashboard */
+.kpi{display:flex;flex-direction:column;gap:2px}.kpi b{font-size:24px}.kpi span{color:var(--muted);font-size:12px}
+.carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:none}
+.carousel::-webkit-scrollbar{display:none}
+.carousel .gcard{flex:0 0 82%;max-width:340px;scroll-snap-align:start}
+.gcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.gcard .gbody{padding:14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.gcard h3 a{color:var(--text)}
+.gcard .btn{margin-top:auto}
+.cover{height:120px;display:grid;place-items:center;font-size:44px;background-size:cover;background-position:center}
+.cover.big{height:180px;border-radius:var(--radius);font-size:64px;margin-bottom:14px}
+.steps{display:flex;justify-content:space-between;position:relative;margin:10px 0 4px}
+.steps:before{content:"";position:absolute;top:15px;left:12%;right:12%;height:3px;background:var(--border)}
+.step{flex:1;text-align:center;position:relative;z-index:1;color:var(--muted)}
+.step .dot{width:32px;height:32px;border-radius:50%;background:var(--border);display:grid;place-items:center;margin:0 auto 4px;font-weight:700;color:var(--muted)}
+.step.done .dot{background:var(--primary);color:#fff}.step.done{color:var(--text)}
+.step.bad .dot{background:var(--bad)}.step.good .dot{background:var(--ok)}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qa a{background:var(--soft);color:var(--primary);border-radius:14px;padding:14px 10px;text-align:center;font-weight:600;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px}
+@media(min-width:768px){.qa{grid-template-columns:repeat(4,1fr)}.carousel .gcard{flex-basis:300px}}
+.li{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
+.li:last-child{border:0}
+.li .ico{width:38px;height:38px;border-radius:12px;background:var(--soft);color:var(--primary);display:grid;place-items:center;flex:none}
+.listlink{display:block;color:inherit}
+
+/* lists / details */
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media(min-width:768px){.filters{grid-template-columns:repeat(5,1fr)}}
+.gl{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:640px){.gl{grid-template-columns:1fr 1fr}}@media(min-width:1000px){.gl{grid-template-columns:repeat(3,1fr)}}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.fact{background:var(--soft);border-radius:12px;padding:10px 12px}.fact small{color:var(--muted);display:block}.fact b{font-size:15px}
+ul.clean{margin:0;padding-left:20px}ul.clean li{margin-bottom:5px}
+ol.clean{margin:0;padding-left:20px}ol.clean li{margin-bottom:6px}
+.banner{padding:11px 14px;border-radius:12px;font-size:14px;margin-bottom:14px}
+.banner.ok{background:#dcfce7;color:#14532d}.banner.warn{background:#fef3c7;color:#78350f}.banner.bad{background:#fee2e2;color:#7f1d1d}.banner.info{background:var(--soft);color:var(--primary)}
+.timeline{position:relative;padding-left:26px}
+.timeline:before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--border)}
+.tl{position:relative;margin-bottom:16px}
+.tl:before{content:"";position:absolute;left:-23px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--primary);border:2px solid var(--card)}
+.tl.APPROVED:before{background:var(--ok)}.tl.REJECTED:before{background:var(--bad)}.tl.MORE_INFO_NEEDED:before,.tl.IN_REVIEW:before{background:var(--warn)}
+.wizard{display:flex;gap:6px;margin-bottom:16px}
+.wizard i{flex:1;height:6px;border-radius:6px;background:var(--border)}.wizard i.on{background:var(--primary)}
+.docrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.docrow:last-child{border:0}
+input[type=file]{font-size:13px;max-width:100%}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.toggle:last-child{border:0}
+.toggle input{width:44px;height:24px;accent-color:var(--primary)}
+table.tbl{width:100%;border-collapse:collapse;font-size:14px}
+table.tbl th,table.tbl td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--border)}
+.scroll-x{overflow-x:auto}
+
+/* chat */
+.chat-wrap{display:grid;grid-template-columns:1fr;gap:0;height:calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom) - 32px);min-height:380px}
+.chat-list,.thread{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.chat-list .top{padding:12px;border-bottom:1px solid var(--border)}
+.chat-list .items{overflow-y:auto;flex:1}
+.citem{display:flex;gap:12px;align-items:center;padding:12px;color:inherit;border-bottom:1px solid var(--border)}
+.citem.on{background:var(--soft)}
+.citem .last{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:13px}
+.ub{background:var(--primary);color:#fff;border-radius:99px;min-width:20px;height:20px;font-size:11px;display:grid;place-items:center;padding:0 6px;font-weight:700}
+.thread .head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
+.msg{max-width:80%;padding:9px 12px;border-radius:16px;font-size:14px;white-space:pre-wrap;word-break:break-word;background:var(--card);border:1px solid var(--border)}
+.msg.me{align-self:flex-end;background:var(--primary);color:#fff;border-color:var(--primary);border-bottom-right-radius:4px}
+.msg:not(.me){align-self:flex-start;border-bottom-left-radius:4px}
+.msg small{display:block;opacity:.7;margin-top:3px;font-size:10px}
+.msg img{max-width:100%;border-radius:10px;display:block;margin-bottom:4px}
+.msg a.fl{color:inherit;text-decoration:underline}
+.divider{align-self:center;font-size:11px;color:var(--muted);background:var(--card);border:1px solid var(--border);padding:2px 10px;border-radius:99px;margin:6px 0}
+.composer{border-top:1px solid var(--border);padding:8px;background:var(--card)}
+.composer form{display:flex;gap:8px;align-items:center}
+.composer .input{border-radius:99px}
+.quick{display:flex;gap:6px;overflow-x:auto;padding:0 0 8px;scrollbar-width:none}
+.quick::-webkit-scrollbar{display:none}
+.attachchip{font-size:12px;background:var(--soft);color:var(--primary);padding:4px 10px;border-radius:99px;display:inline-flex;gap:6px;align-items:center;margin-bottom:6px}
+.info-panel{padding:10px 14px;background:var(--soft);font-size:13px;border-bottom:1px solid var(--border)}
+.online{color:var(--ok)}
+@media(max-width:767px){.chat-wrap.has-thread .chat-list{display:none}.chat-wrap:not(.has-thread) .thread{display:none}.hide-m{display:none}}
+@media(min-width:768px){.chat-wrap{grid-template-columns:320px 1fr;gap:14px;height:calc(100dvh - 56px)}.chat-wrap:not(.has-thread) .thread{display:flex}.back-m{display:none}}
+
+/* auth */
+.auth{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(160deg,#1d4ed8 0%,#3b82f6 55%,#e8efff 55%)}
+.auth .card{width:100%;max-width:420px;padding:24px}
+.auth .brand{justify-content:center;margin-bottom:12px}
+.demo{display:flex;gap:8px;margin-top:14px}
+.demo .btn{flex:1}
+
+/* overlay */
+#overlay:empty{display:none}
+#overlay{position:fixed;inset:0;background:rgba(2,6,23,.55);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:768px){#overlay{align-items:center}}
+.modal{background:var(--card);width:100%;max-width:520px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:20px}
+@media(min-width:768px){.modal{border-radius:20px}}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 24px + env(safe-area-inset-bottom));background:#0f172a;color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;z-index:200;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
+#toast.show{opacity:1}
+@media(min-width:768px){#toast{bottom:28px}}
+
+</style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="overlay"></div>
+  <div id="toast"></div>
+  <script>
+'use strict';
+/* GrantConnect MVP - vanilla JS single-page app.
+   Data lives in localStorage (mock backend). Session lives in sessionStorage (per tab). */
+
+const KEY = 'grantconnect_db_v1';
+const CATS = ['Education', 'Business', 'Farming', 'Health', 'Women'];
+const CAT_ICON = { Education: '🎓', Business: '💼', Farming: '🌾', Health: '🩺', Women: '👩🏾‍💼' };
+const CAT_BG = {
+  Education: 'linear-gradient(135deg,#1d4ed8,#60a5fa)', Business: 'linear-gradient(135deg,#0f766e,#5eead4)',
+  Farming: 'linear-gradient(135deg,#15803d,#86efac)', Health: 'linear-gradient(135deg,#be123c,#fda4af)',
+  Women: 'linear-gradient(135deg,#7e22ce,#d8b4fe)'
+};
+const STATES = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT Abuja','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'];
+const BANKS = ['Access Bank','GTBank','First Bank','UBA','Zenith Bank','Fidelity Bank','Union Bank','Stanbic IBTC','Sterling Bank','Wema Bank','Polaris Bank','Opay','Kuda','Moniepoint','PalmPay'];
+const STATUS = {
+  DRAFT: ['Draft', 'gray'], SUBMITTED: ['Submitted', 'blue'], IN_REVIEW: ['In Review', 'amber'],
+  MORE_INFO_NEEDED: ['More info needed', 'amber'], APPROVED: ['Approved', 'green'], REJECTED: ['Rejected', 'red']
+};
+const MAX_FILE = 1024 * 1024; // 1MB per file (localStorage is small)
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = p => p + '_' + Math.random().toString(36).slice(2, 9);
+const now = () => new Date().toISOString();
+const dayOffset = n => new Date(Date.now() + n * 864e5).toISOString();
+const daysLeft = d => Math.ceil((new Date(d) - Date.now()) / 864e5);
+const money = n => '₦' + Number(n || 0).toLocaleString('en-NG');
+const fdate = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const ftime = d => new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+const initials = n => (n || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0].toUpperCase()).join('');
+function ago(d) {
+  const s = (Date.now() - new Date(d)) / 1000;
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+  return Math.floor(s / 86400) + 'd ago';
+}
+function hash(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return 'h' + (h >>> 0).toString(36) + s.length; } // DEMO ONLY - use argon2/bcrypt on a real backend
+const badge = s => `<span class="badge ${STATUS[s][1]}">${STATUS[s][0]}</span>`;
+const opts = (arr, sel, blank) => (blank !== undefined ? `<option value="">${esc(blank)}</option>` : '') + arr.map(o => `<option ${o === sel ? 'selected' : ''}>${esc(o)}</option>`).join('');
+
+const ICONS = {
+  dashboard: '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
+  chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  grant: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+  user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+  clip: '<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
+  back: '<path d="m15 18-6-6 6-6"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
+  file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>'
+};
+const icon = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+
+/* ---------- database (localStorage) ---------- */
+let db = null;
+function loadDb() {
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.grants) return d; } catch (e) { /* ignore */ }
+  const d = seed();
+  try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { /* ignore */ }
+  return d;
+}
+db = loadDb();
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(db)); return true; }
+  catch (e) { toast('Storage is full. Delete some uploaded files.'); return false; }
+}
+function newUser(o) {
+  return Object.assign({ id: uid('u'), role: 'APPLICANT', email: '', phone: '', pass: '', name: '', photo: '', dob: '', gender: '', address: '', state: '', country: 'Nigeria', idNumber: '', interest: '', bank: { bankName: '', accountName: '', accountNumber: '' }, docs: [], notif: { push: true, email: true, sms: false }, createdAt: now() }, o);
+}
+function ensureConvs(u) {
+  if (u.role !== 'APPLICANT') return;
+  [['SUPPORT', 'Support Team', 'Welcome to GrantConnect! Ask us anything about grants or your application.'],
+   ['OFFICER', 'Grant Officer', 'Hello! I am your grant officer. Message me about any application.']].forEach(([type, name, text]) => {
+    if (!db.convs.find(c => c.userId === u.id && c.type === type && !c.applicationId)) {
+      db.convs.push({ id: uid('c'), userId: u.id, type, name, applicationId: null, messages: [{ id: uid('m'), from: 'staff', text, at: now(), read: false }] });
+    }
+  });
+}
+function seed() {
+  const fld = (g, i, label, type = 'text', req = true, options = []) => ({ id: `${g}f${i}`, label, type, required: req, options });
+  const mk = (n, o) => Object.assign({ id: 'g' + n, status: 'OPEN', featured: false, eligibleStates: [], location: 'Nationwide', eligibility: 'Individuals', awards: 50, coverUrl: '', createdAt: dayOffset(-n), fields: [], requiredDocs: ['Valid ID (NIN slip or passport)'], steps: ['Create an account and complete your profile', 'Fill in the application form', 'Upload the required documents', 'Submit and track your status'] }, o);
+  const grants = [
+    mk(1, { title: 'Small Business Support Grant', org: 'Rivers Enterprise Fund', category: 'Business', amount: 2500000, deadline: dayOffset(2), featured: true, location: 'Rivers', eligibleStates: ['Rivers', 'Bayelsa', 'Akwa Ibom'], eligibility: 'Registered businesses', desc: 'Working capital support for small businesses that have been operating for at least 6 months.', criteria: ['Business operating for 6+ months', 'Based in Rivers, Bayelsa or Akwa Ibom', 'Owner aged 18 or above', 'Valid bank account in the business owner\'s name'], requiredDocs: ['Valid ID (NIN slip or passport)', 'Business registration (CAC) or proof of business', '6-month bank statement'], fields: [['Business name'], ['Describe how you will use the funds', 'textarea'], ['Number of employees', 'number'], ['Business start date', 'date']].map((x, i) => fld('g1', i, x[0], x[1] || 'text')) }),
+    mk(2, { title: 'Girl-Child Scholarship Fund', org: 'Bright Future Foundation', category: 'Education', amount: 500000, deadline: dayOffset(9), featured: true, desc: 'Tuition support for female students in public secondary schools and universities.', criteria: ['Female student', 'Currently enrolled in school', 'Demonstrated financial need'], requiredDocs: ['Valid ID (NIN slip or passport)', 'School admission or enrolment letter'], fields: [['School name'], ['Class / level'], ['Why do you need this scholarship?', 'textarea']].map((x, i) => fld('g2', i, x[0], x[1] || 'text')) }),
+    mk(3, { title: 'Youth Farmers Empowerment Grant', org: 'AgroNigeria Initiative', category: 'Farming', amount: 1500000, deadline: dayOffset(15), featured: true, desc: 'Seed, tools and cash support for young farmers aged 18 to 35.', criteria: ['Aged 18 to 35', 'Active farmer or agro-entrepreneur', 'Farm size of at least 1 hectare'], requiredDocs: ['Valid ID (NIN slip or passport)', 'Photo of farm'], fields: [['Type of farming', 'select', true, ['Crop', 'Livestock', 'Fishery', 'Mixed']], ['Farm size (hectares)', 'number'], ['Farm location']].map((x, i) => fld('g3', i, x[0], x[1] || 'text', true, x[3] || [])) }),
+    mk(4, { title: 'Community Health Worker Grant', org: 'HealthFirst Africa', category: 'Health', amount: 3000000, deadline: dayOffset(21), location: 'Rivers', eligibleStates: ['Rivers', 'Lagos', 'Kano'], desc: 'Funding for community health programmes in underserved areas.', criteria: ['Registered health worker or NGO', 'Programme runs in Rivers, Lagos or Kano'], requiredDocs: ['Valid ID (NIN slip or passport)', 'Professional licence or NGO registration'], fields: [['Describe your health programme', 'textarea'], ['People you expect to reach', 'number']].map((x, i) => fld('g4', i, x[0], x[1] || 'text')) }),
+    mk(5, { title: 'Women in Enterprise Grant', org: 'Her Business Hub', category: 'Women', amount: 1000000, deadline: dayOffset(5), desc: 'Seed funding for women-owned small businesses and startups.', criteria: ['Woman aged 18 or above', 'Has a business or a clear business plan'], requiredDocs: ['Valid ID (NIN slip or passport)'], fields: [['Business idea or name'], ['What will the money be used for?', 'textarea']].map((x, i) => fld('g5', i, x[0], x[1] || 'text')) }),
+    mk(6, { title: 'Tech Startup Seed Fund', org: 'Naija Innovation Lab', category: 'Business', amount: 10000000, deadline: dayOffset(33), eligibility: 'Registered businesses', desc: 'Pre-seed funding for early-stage technology startups building for Africa.', criteria: ['Registered company', 'Working prototype or MVP', 'Team of at least 2 people'], requiredDocs: ['Valid ID (NIN slip or passport)', 'Pitch deck (PDF)', 'CAC certificate'], fields: [['Startup name'], ['Product website or demo link'], ['What problem do you solve?', 'textarea']].map((x, i) => fld('g6', i, x[0], x[1] || 'text', i !== 1)) }),
+    mk(7, { title: 'University Research Grant', org: 'Education Trust Fund', category: 'Education', amount: 4000000, deadline: dayOffset(48), eligibility: 'Individuals', desc: 'Support for postgraduate students and lecturers carrying out original research.', criteria: ['Postgraduate student or academic staff', 'Approved research proposal'], requiredDocs: ['Valid ID (NIN slip or passport)', 'Research proposal (PDF)'], fields: [['Research title'], ['Institution'], ['Abstract', 'textarea']].map((x, i) => fld('g7', i, x[0], x[1] || 'text')) }),
+    mk(8, { title: 'Rural Clinic Equipment Support', org: 'HealthFirst Africa', category: 'Health', amount: 6000000, deadline: dayOffset(60), eligibility: 'Registered businesses', desc: 'Medical equipment funding for rural clinics and primary healthcare centres.', criteria: ['Registered clinic or PHC', 'Located in a rural community'], requiredDocs: ['Valid ID (NIN slip or passport)', 'Clinic registration certificate'], fields: [['Clinic name'], ['Equipment needed', 'textarea']].map((x, i) => fld('g8', i, x[0], x[1] || 'text')) })
+  ];
+  const admin = newUser({ id: 'u_admin', role: 'ADMIN', name: 'Grant Admin', email: 'admin@grantconnect.com', pass: hash('admin123') });
+  const demo = newUser({ id: 'u_demo', name: 'Chioma Okafor', email: 'demo@grantconnect.com', phone: '08012345678', pass: hash('demo123'), state: 'Rivers', gender: 'Female', dob: '2000-05-14', address: '12 Aba Road, Port Harcourt', interest: 'Business', bank: { bankName: 'GTBank', accountName: 'Chioma Okafor', accountNumber: '0123456789' } });
+  const app = {
+    id: 'APP-1001', userId: demo.id, grantId: 'g2', status: 'IN_REVIEW', submittedAt: dayOffset(-3),
+    personal: { fullName: demo.name, phone: demo.phone, dob: demo.dob, address: demo.address, state: demo.state }, bank: demo.bank,
+    answers: { g2f0: 'Rivers State University', g2f1: '300 Level', g2f2: 'I need support with my tuition fees.' }, docs: [],
+    history: [{ status: 'SUBMITTED', at: dayOffset(-3), note: 'Application submitted' }, { status: 'IN_REVIEW', at: dayOffset(-1), note: 'Your application is now being reviewed' }], note: ''
+  };
+  const d = { users: [admin, demo], grants, apps: [app], convs: [], activity: [
+    { id: uid('a'), userId: demo.id, text: 'Your application for Girl-Child Scholarship Fund moved to Review', at: dayOffset(-1), seen: false },
+    { id: uid('a'), userId: demo.id, text: 'You applied for Girl-Child Scholarship Fund', at: dayOffset(-3), seen: true }
+  ] };
+  db = d; ensureConvs(demo);
+  d.convs.find(c => c.userId === demo.id && c.type === 'OFFICER').messages.push({ id: uid('m'), from: 'user', text: 'Good day, how long does review take?', at: dayOffset(-1), read: true }, { id: uid('m'), from: 'staff', text: 'Reviews usually take 5 to 7 working days.', at: dayOffset(-1), read: false });
+  return d;
+}
+
+/* ---------- state ---------- */
+const ui = { gf: { q: '', cat: 'All', loc: '', sort: 'newest', min: '', elig: '' }, dashCat: 'All', step: 0, draft: null, att: null, typing: null, af: 'ALL', chatQ: '', lastHash: '' };
+const me = () => db.users.find(u => u.id === sessionStorage.getItem('gc_uid'));
+const gid = id => db.grants.find(g => g.id === id);
+const isOpen = g => g.status === 'OPEN' && daysLeft(g.deadline) >= 0;
+const myApps = () => db.apps.filter(a => a.userId === (me() || {}).id);
+const userById = id => db.users.find(u => u.id === id);
+const addActivity = (userId, text) => db.activity.push({ id: uid('a'), userId, text, at: now(), seen: false });
+function avatar(u, size = '') { return u && u.photo ? `<img class="avatar ${size}" src="${esc(u.photo)}" alt="">` : `<span class="avatar ${size}">${esc(initials(u && u.name))}</span>`; }
+function cover(g, big) {
+  const style = g.coverUrl ? `background-image:url('${esc(g.coverUrl)}')` : `background:${CAT_BG[g.category] || CAT_BG.Business}`;
+  return `<div class="cover ${big ? 'big' : ''}" style="${style}">${g.coverUrl ? '' : CAT_ICON[g.category] || '💼'}</div>`;
+}
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
+function openModal(html) { $('#overlay').innerHTML = `<div class="modal" role="dialog">${html}</div>`; }
+function closeModal() { $('#overlay').innerHTML = ''; }
+function readFile(file, cb) {
+  if (!file) return;
+  if (file.size > MAX_FILE) { toast('File too large. Maximum is 1MB.'); return; }
+  const r = new FileReader();
+  r.onload = () => cb({ name: file.name, type: file.type, dataUrl: r.result });
+  r.readAsDataURL(file);
+}
+function openDataUrl(u) { fetch(u).then(r => r.blob()).then(b => window.open(URL.createObjectURL(b), '_blank')); }
+const theme = () => localStorage.getItem('gc_theme') || 'light';
+function applyTheme() {
+  const t = theme(); const dark = t === 'dark' || (t === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+}
+
+/* ---------- chat helpers ---------- */
+const viewerRole = u => (u.role === 'ADMIN' ? 'staff' : 'user');
+const convsFor = u => (u.role === 'ADMIN' ? db.convs : db.convs.filter(c => c.userId === u.id));
+const unreadOf = (c, role) => c.messages.filter(m => m.from !== role && !m.read).length;
+const totalUnread = u => convsFor(u).reduce((n, c) => n + unreadOf(c, viewerRole(u)), 0);
+function chatTitle(c, u) { if (u.role !== 'ADMIN') return c.name; const a = userById(c.userId); return `${a ? a.name : 'Applicant'} · ${c.type === 'SUPPORT' ? 'Support' : 'Officer'}`; }
+function updateBadges() {
+  const u = me(); if (!u) return;
+  const n = totalUnread(u);
+  document.querySelectorAll('.nav-badge').forEach(el => { el.textContent = n > 0 ? n : ''; });
+}
+function badgeHtml() { const u = me(); const n = u ? totalUnread(u) : 0; return `<b class="nav-badge">${n > 0 ? n : ''}</b>`; }
+
+/* ---------- layout ---------- */
+function layout(content, active, extraClass = '') {
+  const u = me(), admin = u.role === 'ADMIN';
+  const items = admin
+    ? [['admin', 'Dashboard', 'dashboard', '#/admin'], ['grants', 'Grants', 'grant', '#/admin/grants'], ['apps', 'Applications', 'list', '#/admin/applications'], ['chat', 'Chat', 'chat', '#/admin/chat']]
+    : [['dashboard', 'Dashboard', 'dashboard', '#/dashboard'], ['chat', 'Chat', 'chat', '#/chat'], ['grants', 'Grant', 'grant', '#/grants'], ['account', 'Account', 'user', '#/account']];
+  const nav = items.map(([k, l, ic, href]) => `<a class="nav-item ${active === k ? 'active' : ''}" href="${href}">${icon(ic)}<span>${l}</span>${k === 'chat' ? badgeHtml() : ''}</a>`).join('');
+  return `<div class="app">
+    <aside class="sidebar"><div class="brand"><span class="logo">G</span>GrantConnect</div>${nav}
+      <div class="side-foot"><div class="row" style="margin-bottom:10px">${avatar(u, 'sm')}<div class="grow"><b>${esc(u.name)}</b><br><small class="muted">${admin ? 'Administrator' : 'Applicant'}</small></div></div>
+      <button class="btn ghost block sm" data-act="logout">${icon('logout')} Log out</button></div></aside>
+    <main class="main ${extraClass}"><div class="content">${content}</div></main>
+    <nav class="bottomnav" aria-label="Main">${nav}</nav></div>`;
+}
+
+/* ---------- auth views ---------- */
+function vAuth(kind) {
+  const demo = `<div class="demo"><button class="btn ghost sm" data-act="demoUser" type="button">Demo applicant</button><button class="btn ghost sm" data-act="demoAdmin" type="button">Demo admin</button></div>`;
+  const head = `<div class="brand"><span class="logo">G</span>GrantConnect</div>`;
+  if (kind === 'register') return `<div class="auth"><div class="card">${head}<h2 style="text-align:center">Create your account</h2>
+    <form data-form="register">
+      <div class="field"><label>Full name</label><input class="input" name="name" required autocomplete="name"></div>
+      <div class="field"><label>Email address</label><input class="input" type="email" name="email" required autocomplete="email"></div>
+      <div class="field"><label>Phone number</label><input class="input" type="tel" name="phone" required pattern="[0-9+ ]{10,15}" autocomplete="tel"></div>
+      <div class="field"><label>Password (min 6 characters)</label><input class="input" type="password" name="pass" minlength="6" required autocomplete="new-password"></div>
+      <div class="field"><label>Confirm password</label><input class="input" type="password" name="pass2" required autocomplete="new-password"></div>
+      <label class="row" style="font-weight:400"><input type="checkbox" name="terms" required> <span>I accept the Terms and Privacy Policy</span></label>
+      <button class="btn block" style="margin-top:14px">Create account</button></form>
+    <p class="muted" style="text-align:center;margin-top:14px">Already registered? <a href="#/login">Log in</a></p></div></div>`;
+  if (kind === 'forgot') return `<div class="auth"><div class="card">${head}<h2 style="text-align:center">Reset password</h2>
+    <p class="muted">Demo mode: enter your email and a new password. A real backend would email you a reset link.</p>
+    <form data-form="forgot"><div class="field"><label>Email address</label><input class="input" type="email" name="email" required></div>
+      <div class="field"><label>New password</label><input class="input" type="password" name="pass" minlength="6" required></div>
+      <button class="btn block">Reset password</button></form>
+    <p style="text-align:center;margin-top:14px"><a href="#/login">Back to login</a></p></div></div>`;
+  return `<div class="auth"><div class="card">${head}<h2 style="text-align:center">Welcome back</h2><p class="muted" style="text-align:center">Log in to find your next funding opportunity.</p>
+    <form data-form="login"><div class="field"><label>Email address</label><input class="input" type="email" name="email" required autocomplete="email"></div>
+      <div class="field"><label>Password</label><input class="input" type="password" name="pass" required autocomplete="current-password"></div>
+      <button class="btn block">Log in</button></form>
+    <p style="text-align:center;margin-top:12px"><a href="#/forgot">Forgot password?</a></p>${demo}
+    <p class="muted" style="text-align:center;margin-top:14px">New here? <a href="#/register">Create an account</a></p></div></div>`;
+}
+
+/* ---------- applicant: dashboard ---------- */
+function progress(a) {
+  const idx = { SUBMITTED: 0, IN_REVIEW: 1, MORE_INFO_NEEDED: 1, APPROVED: 2, REJECTED: 2 }[a.status] ?? 0;
+  const labels = ['Applied', 'Review', a.status === 'REJECTED' ? 'Rejected' : 'Approved'];
+  return `<div class="steps">${labels.map((l, i) => `<div class="step ${i <= idx ? 'done' : ''} ${a.status === 'REJECTED' && i === 2 ? 'bad' : ''} ${a.status === 'APPROVED' && i === 2 ? 'good' : ''}"><div class="dot">${i < idx || a.status === 'APPROVED' && i === 2 ? icon('check') : i + 1}</div><small>${l}</small></div>`).join('')}</div>`;
+}
+function gCard(g) {
+  const a = myApps().find(x => x.grantId === g.id); const d = daysLeft(g.deadline);
+  const href = a && a.status !== 'DRAFT' ? '#/applications/' + a.id : '#/apply/' + g.id;
+  const label = a ? (a.status === 'DRAFT' ? 'Continue draft' : 'View status') : 'Apply';
+  return `<article class="gcard">${cover(g)}<div class="gbody"><div><span class="tag">${esc(g.category)}</span></div>
+    <h3><a href="#/grants/${g.id}">${esc(g.title)}</a></h3><p class="muted" style="margin:0">${esc(g.org)}</p>
+    <div class="row between"><strong>${money(g.amount)}</strong><small class="${d <= 7 ? 'urgent' : 'muted'}">${d <= 0 ? 'Last day' : d + ' day' + (d === 1 ? '' : 's') + ' left'}</small></div>
+    <a class="btn ${a ? 'ghost' : ''}" href="${href}">${label}</a></div></article>`;
+}
+function vDashboard() {
+  const u = me(), apps = myApps(), open = db.grants.filter(isOpen);
+  const approved = apps.filter(a => a.status === 'APPROVED').length;
+  const pending = apps.filter(a => ['SUBMITTED', 'IN_REVIEW', 'MORE_INFO_NEEDED'].includes(a.status)).length;
+  const unseen = db.activity.filter(a => a.userId === u.id && !a.seen).length;
+  let feat = open.filter(g => ui.dashCat === 'All' || g.category === ui.dashCat);
+  feat = feat.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)).slice(0, 8);
+  const latest = apps.filter(a => a.status !== 'DRAFT').sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0))[0];
+  const applied = new Set(apps.filter(a => a.status !== 'DRAFT').map(a => a.grantId));
+  const deadlines = open.filter(g => !applied.has(g.id)).sort((a, b) => new Date(a.deadline) - new Date(b.deadline)).slice(0, 3);
+  const support = db.convs.find(c => c.userId === u.id && c.type === 'SUPPORT');
+  const acts = db.activity.filter(a => a.userId === u.id).sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 6);
+  return layout(`<div class="stack">
+    <div class="row between"><a href="#/account" class="row" style="color:inherit">${avatar(u)}<div><small class="muted">Welcome back!</small><h2 style="margin:0">Hello, ${esc(u.name.split(' ')[0])}</h2></div></a>
+      <a class="iconbtn" href="#/notifications" aria-label="Notifications">${icon('bell')}${unseen ? `<span class="dotb">${unseen}</span>` : ''}</a></div>
+    <div class="grid kpis">
+      <div class="card kpi"><b>${open.length}</b><span>Total grants available</span></div>
+      <div class="card kpi"><b>${apps.filter(a => a.status !== 'DRAFT').length}</b><span>My applications</span></div>
+      <div class="card kpi"><b style="color:var(--ok)">${approved}</b><span>Approved</span></div>
+      <div class="card kpi"><b style="color:var(--warn)">${pending}</b><span>Pending</span></div></div>
+    <form data-form="dashSearch" class="search">${icon('search')}<input class="input" name="q" placeholder="Search grant by name" aria-label="Search grants"></form>
+    <div><div class="chips">${['All', ...CATS].map(c => `<button class="chip ${ui.dashCat === c ? 'on' : ''}" data-act="dashCat" data-v="${c}">${c}</button>`).join('')}</div></div>
+    <div><div class="row between" style="margin-bottom:8px"><h3 style="margin:0">Featured grants</h3><a href="#/grants">See all</a></div>
+      ${feat.length ? `<div class="carousel">${feat.map(gCard).join('')}</div>` : '<div class="card empty">No open grants in this category yet.</div>'}</div>
+    <div class="grid g2">
+      <div class="card"><h3>My application progress</h3>${latest ? `<div class="row between"><b>${esc((gid(latest.grantId) || {}).title)}</b>${badge(latest.status)}</div>${progress(latest)}<a class="btn ghost sm" style="margin-top:8px" href="#/applications/${latest.id}">View details</a>` : '<p class="muted">You have not applied yet.</p><a class="btn sm" href="#/grants">Find a grant</a>'}</div>
+      <div class="card"><h3>Upcoming deadlines</h3>${deadlines.length ? deadlines.map(g => { const d = daysLeft(g.deadline); return `<div class="li"><div class="grow"><b>${esc(g.title)}</b><br><small class="${d <= 7 ? 'urgent' : 'muted'}">${d <= 0 ? 'Last day' : d + ' day' + (d === 1 ? '' : 's') + ' left'}</small></div><a class="btn sm" href="#/apply/${g.id}">Apply</a></div>`; }).join('') : '<p class="muted">No upcoming deadlines.</p>'}</div></div>
+    <div class="card"><h3>Quick actions</h3><div class="qa">
+      <a href="#/grants">${icon('grant')}Apply for Grant</a><a href="#/applications">${icon('check')}Check Status</a>
+      <a href="#/account" data-act="toDocs">${icon('upload')}Upload Document</a><a href="${support ? '#/chat/' + support.id : '#/chat'}">${icon('chat')}Chat Support</a></div></div>
+    <div class="card"><h3>Recent activity</h3>${acts.length ? acts.map(a => `<div class="li"><span class="ico">${icon('bell')}</span><div class="grow">${esc(a.text)}<br><small class="muted">${ago(a.at)}</small></div></div>`).join('') : '<p class="muted">Nothing yet.</p>'}</div>
+  </div>`, 'dashboard');
+}
+function vNotifications() {
+  const u = me(); let changed = false;
+  db.activity.forEach(a => { if (a.userId === u.id && !a.seen) { a.seen = true; changed = true; } });
+  if (changed) save();
+  const acts = db.activity.filter(a => a.userId === u.id).sort((a, b) => new Date(b.at) - new Date(a.at));
+  return layout(`<div class="page-title"><div class="row"><a class="iconbtn" href="#/dashboard">${icon('back')}</a><h1>Notifications</h1></div></div>
+    <div class="card">${acts.length ? acts.map(a => `<div class="li"><span class="ico">${icon('bell')}</span><div class="grow">${esc(a.text)}<br><small class="muted">${ago(a.at)}</small></div></div>`).join('') : '<p class="empty">No notifications yet.</p>'}</div>`, 'dashboard');
+}
+
+/* ---------- applicant: grants ---------- */
+function filteredGrants() {
+  const f = ui.gf; let list = db.grants.filter(isOpen);
+  if (f.q) list = list.filter(g => (g.title + ' ' + g.org).toLowerCase().includes(f.q.toLowerCase()));
+  if (f.cat !== 'All') list = list.filter(g => g.category === f.cat);
+  if (f.loc) list = list.filter(g => !g.eligibleStates.length || g.eligibleStates.includes(f.loc));
+  if (f.min) list = list.filter(g => g.amount >= +f.min);
+  if (f.elig) list = list.filter(g => g.eligibility === f.elig);
+  if (f.sort === 'amount') list.sort((a, b) => b.amount - a.amount);
+  else if (f.sort === 'ending') list.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+  else list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  return list;
+}
+function gListHtml() {
+  const list = filteredGrants();
+  return `<p class="muted">${list.length} grant${list.length === 1 ? '' : 's'} found</p>` + (list.length ? `<div class="gl">${list.map(gCard).join('')}</div>` : '<div class="card empty">No grants match your filters.</div>');
+}
+function vGrants() {
+  const f = ui.gf;
+  return layout(`<div class="page-title"><h1>Grants</h1><a class="btn ghost sm" href="#/applications">My applications</a></div>
+    <div class="search">${icon('search')}<input class="input" data-input="gf" data-key="q" value="${esc(f.q)}" placeholder="Search grants" aria-label="Search grants"></div>
+    <div class="chips" style="margin-top:10px">${['All', ...CATS].map(c => `<button class="chip ${f.cat === c ? 'on' : ''}" data-act="gfCat" data-v="${c}">${c}</button>`).join('')}</div>
+    <div class="filters">
+      <select data-change="gf" data-key="loc" aria-label="Location">${opts(STATES, f.loc, 'All locations')}</select>
+      <select data-change="gf" data-key="min" aria-label="Amount"><option value="">Any amount</option>${[[500000, '₦500k+'], [1000000, '₦1m+'], [3000000, '₦3m+'], [5000000, '₦5m+']].map(([v, l]) => `<option value="${v}" ${String(f.min) === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <select data-change="gf" data-key="elig" aria-label="Eligibility">${opts(['Individuals', 'Registered businesses'], f.elig, 'Any eligibility')}</select>
+      <select data-change="gf" data-key="sort" aria-label="Sort">${[['newest', 'Newest'], ['amount', 'Highest amount'], ['ending', 'Ending soon']].map(([v, l]) => `<option value="${v}" ${f.sort === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <button class="btn ghost" data-act="gfReset">Reset</button></div>
+    <div id="glist" style="margin-top:14px">${gListHtml()}</div>`, 'grants');
+}
+function eligibleCheck(g, u) {
+  if (!g.eligibleStates.length) return '<div class="banner ok">Open to applicants nationwide.</div>';
+  if (!u.state) return '<div class="banner warn">This grant is limited to some states. Add your state in Account to check eligibility.</div>';
+  return g.eligibleStates.includes(u.state) ? `<div class="banner ok">${icon('check')} You are in an eligible state (${esc(u.state)}).</div>` : `<div class="banner bad">This grant is for ${esc(g.eligibleStates.join(', '))}. Your profile state is ${esc(u.state)}.</div>`;
+}
+function vGrantDetail(id) {
+  const g = gid(id), u = me(); if (!g) return vNotFound();
+  const a = myApps().find(x => x.grantId === g.id); const d = daysLeft(g.deadline);
+  const btn = a && a.status !== 'DRAFT' ? `<a class="btn block" href="#/applications/${a.id}">View my application</a>` : isOpen(g) ? `<a class="btn block" href="#/apply/${g.id}">${a ? 'Continue draft' : 'Apply now'}</a>` : '<button class="btn block" disabled>Applications closed</button>';
+  return layout(`<div class="page-title"><a class="iconbtn" href="#/grants">${icon('back')}</a><span></span></div>${cover(g, true)}
+    <span class="tag">${esc(g.category)}</span><h1>${esc(g.title)}</h1><p class="muted">${esc(g.org)}</p>
+    <div class="facts"><div class="fact"><small>Amount</small><b>${money(g.amount)}</b></div><div class="fact"><small>Deadline</small><b>${fdate(g.deadline)}</b><small class="${d <= 7 ? 'urgent' : ''}">${d < 0 ? 'Closed' : d + ' day(s) left'}</small></div>
+      <div class="fact"><small>Who can apply</small><b>${esc(g.eligibility)}</b></div><div class="fact"><small>Location</small><b>${esc(g.eligibleStates.length ? g.eligibleStates.join(', ') : 'Nationwide')}</b></div></div>
+    ${eligibleCheck(g, u)}
+    <div class="stack"><div class="card"><h3>About this grant</h3><p>${esc(g.desc)}</p></div>
+    <div class="grid g2"><div class="card"><h3>Eligibility criteria</h3><ul class="clean">${(g.criteria || []).map(c => `<li>${esc(c)}</li>`).join('') || '<li>Open to all</li>'}</ul></div>
+      <div class="card"><h3>Required documents</h3><ul class="clean">${(g.requiredDocs || []).map(c => `<li>${esc(c)}</li>`).join('') || '<li>None</li>'}</ul></div></div>
+    <div class="card"><h3>How to apply</h3><ol class="clean">${(g.steps || []).map(c => `<li>${esc(c)}</li>`).join('')}</ol></div>
+    ${btn}</div>`, 'grants');
+}
+
+/* ---------- applicant: application form ---------- */
+function stepsFor(g) { return ['personal', 'bank'].concat(g.fields.length ? ['questions'] : [], g.requiredDocs.length ? ['documents'] : [], ['review']); }
+function loadDraft(g, u) {
+  if (ui.draft && ui.draft.grantId === g.id && ui.draft.userId === u.id) return ui.draft;
+  const ex = db.apps.find(a => a.userId === u.id && a.grantId === g.id);
+  ui.step = 0;
+  ui.draft = ex || { id: 'APP-' + (1000 + db.apps.length + 1 + Math.floor(Math.random() * 900)), userId: u.id, grantId: g.id, status: 'DRAFT', submittedAt: null, personal: { fullName: u.name, phone: u.phone, dob: u.dob, address: u.address, state: u.state }, bank: Object.assign({}, u.bank), answers: {}, docs: [], history: [], note: '' };
+  return ui.draft;
+}
+function persistDraft(a) { if (!db.apps.includes(a)) db.apps.push(a); save(); }
+function fieldInput(f, v) {
+  const r = f.required ? 'required' : '';
+  if (f.type === 'textarea') return `<textarea name="${f.id}" ${r}>${esc(v)}</textarea>`;
+  if (f.type === 'select') return `<select name="${f.id}" ${r}>${opts(f.options, v, 'Select...')}</select>`;
+  if (f.type === 'checkbox') return `<label class="row" style="font-weight:400"><input type="checkbox" name="${f.id}" ${v === 'Yes' ? 'checked' : ''}> Yes</label>`;
+  return `<input class="input" type="${f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text'}" name="${f.id}" value="${esc(v)}" ${r}>`;
+}
+function vApply(id) {
+  const g = gid(id), u = me(); if (!g) return vNotFound();
+  const ex = db.apps.find(a => a.userId === u.id && a.grantId === g.id);
+  if (ex && !['DRAFT', 'MORE_INFO_NEEDED'].includes(ex.status)) { location.hash = '#/applications/' + ex.id; return ''; }
+  if (!isOpen(g)) return layout('<div class="card empty">This grant is closed.</div><a class="btn" href="#/grants">Back to grants</a>', 'grants');
+  const a = loadDraft(g, u), steps = stepsFor(g); ui.step = Math.min(ui.step, steps.length - 1);
+  const s = steps[ui.step]; let body = '';
+  if (s === 'personal') body = `<h3>Personal details</h3>
+    <div class="field"><label>Full name</label><input class="input" name="fullName" value="${esc(a.personal.fullName)}" required></div>
+    <div class="field"><label>Phone number</label><input class="input" type="tel" name="phone" value="${esc(a.personal.phone)}" required pattern="[0-9+ ]{10,15}"></div>
+    <div class="field"><label>Date of birth</label><input class="input" type="date" name="dob" value="${esc(a.personal.dob)}" required></div>
+    <div class="field"><label>Address</label><input class="input" name="address" value="${esc(a.personal.address)}" required></div>
+    <div class="field"><label>State</label><select name="state" required>${opts(STATES, a.personal.state, 'Select state')}</select></div>`;
+  if (s === 'bank') body = `<h3>Bank details</h3><p class="muted">Funds are paid into this account if you are approved.</p>
+    <div class="field"><label>Bank</label><select name="bankName" required>${opts(BANKS, a.bank.bankName, 'Select bank')}</select></div>
+    <div class="field"><label>Account number (10 digits)</label><input class="input" name="accountNumber" inputmode="numeric" pattern="[0-9]{10}" value="${esc(a.bank.accountNumber)}" required></div>
+    <div class="field"><label>Account name</label><input class="input" name="accountName" value="${esc(a.bank.accountName)}" required></div>`;
+  if (s === 'questions') body = `<h3>Application questions</h3>${g.fields.map(f => `<div class="field"><label>${esc(f.label)}${f.required ? ' *' : ''}</label>${fieldInput(f, a.answers[f.id] || '')}</div>`).join('')}`;
+  if (s === 'documents') body = `<h3>Upload documents</h3><p class="muted">Max 1MB each. PDF or image.</p>${g.requiredDocs.map((r, i) => { const d = a.docs.find(x => x.req === r); return `<div class="docrow"><div class="grow"><b>${esc(r)}</b><br>${d ? `<small class="muted">${icon('check')} ${esc(d.name)}</small>` : '<small class="urgent">Required</small>'}</div><input type="file" accept="image/*,.pdf" data-change="applyDoc" data-req="${esc(r)}" aria-label="Upload ${esc(r)}"></div>`; }).join('')}`;
+  if (s === 'review') body = `<h3>Review and submit</h3>
+    <p><b>${esc(g.title)}</b> · ${money(g.amount)}</p>
+    <div class="card" style="box-shadow:none;margin-bottom:10px"><b>Personal</b><p class="muted" style="margin:4px 0 0">${esc(a.personal.fullName)} · ${esc(a.personal.phone)}<br>${esc(a.personal.dob)} · ${esc(a.personal.address)}, ${esc(a.personal.state)}</p></div>
+    <div class="card" style="box-shadow:none;margin-bottom:10px"><b>Bank</b><p class="muted" style="margin:4px 0 0">${esc(a.bank.bankName)} · ${esc(a.bank.accountNumber)}<br>${esc(a.bank.accountName)}</p></div>
+    ${g.fields.length ? `<div class="card" style="box-shadow:none;margin-bottom:10px"><b>Answers</b>${g.fields.map(f => `<p class="muted" style="margin:4px 0 0"><small>${esc(f.label)}</small><br>${esc(a.answers[f.id] || '-')}</p>`).join('')}</div>` : ''}
+    ${g.requiredDocs.length ? `<div class="card" style="box-shadow:none;margin-bottom:10px"><b>Documents</b>${g.requiredDocs.map(r => `<p class="muted" style="margin:4px 0 0">${a.docs.find(d => d.req === r) ? '✔' : '✘ Missing:'} ${esc(r)}</p>`).join('')}</div>` : ''}
+    <label class="row" style="font-weight:400"><input type="checkbox" name="confirm" required> I confirm the information is correct</label>`;
+  const last = ui.step === steps.length - 1;
+  return layout(`<div class="page-title"><a class="iconbtn" href="#/grants/${g.id}">${icon('back')}</a><h2 style="margin:0">Apply: ${esc(g.title)}</h2></div>
+    ${a.status === 'MORE_INFO_NEEDED' ? `<div class="banner warn"><b>More information needed:</b> ${esc(a.note)}</div>` : ''}
+    <div class="wizard">${steps.map((_, i) => `<i class="${i <= ui.step ? 'on' : ''}"></i>`).join('')}</div>
+    <small class="muted">Step ${ui.step + 1} of ${steps.length}</small>
+    <form class="card" data-form="applyStep" style="margin-top:8px"><input type="hidden" name="__step" value="${s}">${body}
+      <div class="row" style="margin-top:14px">${ui.step > 0 ? '<button type="button" class="btn ghost" data-act="applyBack">Back</button>' : ''}<button class="btn grow">${last ? 'Submit application' : 'Save and continue'}</button></div></form>`, 'grants');
+}
+
+/* ---------- applicant: applications ---------- */
+function vApplications() {
+  const apps = myApps().sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0));
+  return layout(`<div class="page-title"><div class="row"><a class="iconbtn" href="#/grants">${icon('back')}</a><h1>My applications</h1></div></div>
+    ${apps.length ? `<div class="stack">${apps.map(a => { const g = gid(a.grantId) || { title: 'Grant removed', amount: 0 }; return `<a class="card listlink" href="${a.status === 'DRAFT' ? '#/apply/' + a.grantId : '#/applications/' + a.id}"><div class="row between"><b>${esc(g.title)}</b>${badge(a.status)}</div><div class="row between muted"><small>${esc(a.id)}</small><small>${a.submittedAt ? 'Submitted ' + fdate(a.submittedAt) : 'Not submitted'}</small></div>${a.status !== 'DRAFT' ? progress(a) : ''}</a>`; }).join('')}</div>` : '<div class="card empty">No applications yet.<br><br><a class="btn" href="#/grants">Browse grants</a></div>'}`, 'grants');
+}
+function timeline(a) {
+  return `<div class="timeline">${a.history.map(h => `<div class="tl ${h.status}"><b>${STATUS[h.status][0]}</b> <small class="muted">${fdate(h.at)} ${ftime(h.at)}</small><br><span class="muted">${esc(h.note || '')}</span></div>`).join('')}</div>`;
+}
+function vAppDetail(id) {
+  const a = db.apps.find(x => x.id === id && x.userId === me().id); if (!a) return vNotFound();
+  const g = gid(a.grantId) || { title: 'Grant removed', amount: 0, org: '' };
+  return layout(`<div class="page-title"><div class="row"><a class="iconbtn" href="#/applications">${icon('back')}</a><h1>Application status</h1></div></div>
+    <div class="stack"><div class="card"><div class="row between"><div><h3 style="margin:0">${esc(g.title)}</h3><small class="muted">${esc(g.org)} · ${money(g.amount)}</small></div>${badge(a.status)}</div>
+      <p class="muted" style="margin:10px 0 0">Application ID: <b>${esc(a.id)}</b></p>${a.status !== 'DRAFT' ? progress(a) : ''}</div>
+    ${a.note && ['MORE_INFO_NEEDED', 'REJECTED', 'APPROVED'].includes(a.status) ? `<div class="banner ${a.status === 'APPROVED' ? 'ok' : a.status === 'REJECTED' ? 'bad' : 'warn'}"><b>Officer note:</b> ${esc(a.note)}</div>` : ''}
+    <div class="card"><h3>Status timeline</h3>${timeline(a)}</div>
+    <div class="row wrap">${a.status === 'MORE_INFO_NEEDED' ? `<a class="btn" href="#/apply/${a.grantId}">Update application</a>` : ''}<button class="btn ghost" data-act="chatApp" data-id="${a.id}">${icon('chat')} Message officer</button></div></div>`, 'grants');
+}
+
+/* ---------- chat (shared) ---------- */
+function dayLabel(d) { const x = new Date(d), t = new Date(); if (x.toDateString() === t.toDateString()) return 'Today'; const y = new Date(Date.now() - 864e5); if (x.toDateString() === y.toDateString()) return 'Yesterday'; return fdate(d); }
+function msgsHtml(c, u) {
+  const role = viewerRole(u); let last = '';
+  return c.messages.map(m => {
+    const dl = dayLabel(m.at); const div = dl !== last ? `<div class="divider">${dl}</div>` : ''; last = dl;
+    const att = m.att ? (m.att.type && m.att.type.startsWith('image/') ? `<img src="${esc(m.att.dataUrl)}" alt="">` : `<a class="fl" href="${esc(m.att.dataUrl)}" download="${esc(m.att.name)}">${icon('file')} ${esc(m.att.name)}</a><br>`) : '';
+    return `${div}<div class="msg ${m.from === role ? 'me' : ''}">${att}${esc(m.text)}<small>${ftime(m.at)}${m.auto ? ' · auto-reply' : ''}</small></div>`;
+  }).join('');
+}
+function chatListHtml(u, activeId, base) {
+  const q = ui.chatQ.toLowerCase(), role = viewerRole(u);
+  const list = convsFor(u).filter(c => chatTitle(c, u).toLowerCase().includes(q)).sort((a, b) => new Date((b.messages[b.messages.length - 1] || {}).at || 0) - new Date((a.messages[a.messages.length - 1] || {}).at || 0));
+  if (!list.length) return '<div class="empty">No chats found.</div>';
+  return list.map(c => { const l = c.messages[c.messages.length - 1], n = unreadOf(c, role), au = u.role === 'ADMIN' ? userById(c.userId) : null;
+    return `<a class="citem ${c.id === activeId ? 'on' : ''}" href="${base}/${c.id}">${au ? avatar(au) : `<span class="avatar">${esc(initials(c.name))}</span>`}<div class="grow"><div class="row between"><b>${esc(chatTitle(c, u))}</b><small class="muted">${l ? ftime(l.at) : ''}</small></div><div class="row between"><span class="last">${l ? esc(l.att ? '📎 ' + l.att.name : l.text) : 'No messages'}</span>${n ? `<span class="ub">${n}</span>` : ''}</div></div></a>`; }).join('');
+}
+function vChat(activeId, base, navKey) {
+  const u = me(), role = viewerRole(u); const c = activeId ? convsFor(u).find(x => x.id === activeId) : null;
+  if (activeId && !c) { location.hash = base; return ''; }
+  if (c) { let ch = false; c.messages.forEach(m => { if (m.from !== role && !m.read) { m.read = true; ch = true; } }); if (ch) save(); }
+  let thread = '<div class="empty" style="margin:auto">Select a conversation to start chatting.</div>';
+  if (c) {
+    const app = c.applicationId ? db.apps.find(a => a.id === c.applicationId) : null, g = app ? gid(app.grantId) : null;
+    const quick = u.role === 'ADMIN' ? ['Please upload the missing documents', 'Your application is under review', 'Thank you, we have received this'] : ['What is my status?', 'What documents are needed?', 'When is the deadline?'];
+    thread = `<div class="head"><a class="iconbtn back-m" href="${base}" aria-label="Back">${icon('back')}</a><span class="avatar sm">${esc(initials(chatTitle(c, u)))}</span>
+        <div class="grow"><b>${esc(chatTitle(c, u))}</b><br><small id="typing" class="${ui.typing === c.id ? 'online' : 'muted'}">${ui.typing === c.id ? 'Typing...' : '<span class="online">●</span> Online'}</small></div>
+        <button class="iconbtn" data-act="chatInfo" aria-label="Chat info">${icon('info')}</button></div>
+      <div class="info-panel hide" id="chatinfo"><b>Related grant:</b> ${g ? esc(g.title) : 'General enquiry'}<br><b>Application ID:</b> ${app ? esc(app.id) : 'None'}</div>
+      <div class="msgs" id="msgs">${msgsHtml(c, u)}</div>
+      <div class="composer"><div class="quick">${quick.map(q => `<button type="button" class="chip" data-act="quick" data-text="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+        <div id="attachchip">${attachChip()}</div>
+        <form data-form="chatSend" id="chatForm"><input type="hidden" name="cid" value="${c.id}"><label class="iconbtn" style="margin:0;cursor:pointer" aria-label="Attach file">${icon('clip')}<input type="file" hidden data-change="chatAttach" accept="image/*,.pdf,.doc,.docx"></label>
+          <input class="input" name="text" id="chatText" placeholder="Type a message" autocomplete="off"><button class="iconbtn" style="background:var(--primary);color:#fff;border:0" aria-label="Send">${icon('send')}</button></form></div>`;
+  }
+  return layout(`<div class="chat-wrap ${c ? 'has-thread' : ''}"><section class="chat-list"><div class="top"><h2 style="margin-bottom:8px">Chats</h2><div class="search">${icon('search')}<input class="input" data-input="chatSearch" value="${esc(ui.chatQ)}" placeholder="Search by name"></div></div><div class="items" id="chatlist">${chatListHtml(u, activeId, base)}</div></section><section class="thread">${thread}</section></div>`, navKey, 'chat-page');
+}
+const attachChip = () => (ui.att ? `<span class="attachchip">${icon('file')} ${esc(ui.att.name)} <a href="#" data-act="rmAtt" style="color:inherit">${icon('x')}</a></span>` : '');
+function refreshChat() {
+  const u = me(); if (!u) return; updateBadges();
+  const el = $('#msgs'); const p = route(); const id = p[p.length - 1];
+  const list = $('#chatlist'); if (list) list.innerHTML = chatListHtml(u, el ? id : null, u.role === 'ADMIN' ? '#/admin/chat' : '#/chat');
+  if (!el) return;
+  const c = convsFor(u).find(x => x.id === id); if (!c) return;
+  const near = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+  c.messages.forEach(m => { if (m.from !== viewerRole(u)) m.read = true; });
+  el.innerHTML = msgsHtml(c, u); if (near) el.scrollTop = el.scrollHeight;
+  const t = $('#typing'); if (t) { t.className = ui.typing === c.id ? 'online' : 'muted'; t.innerHTML = ui.typing === c.id ? 'Typing...' : '<span class="online">●</span> Online'; }
+  const ac = $('#attachchip'); if (ac) ac.innerHTML = attachChip();
+}
+function botText(c, text) {
+  const t = text.toLowerCase(), apps = db.apps.filter(a => a.userId === c.userId && a.status !== 'DRAFT');
+  if (/status|progress/.test(t)) return apps.length ? 'Your applications:\n' + apps.map(a => `• ${(gid(a.grantId) || {}).title}: ${STATUS[a.status][0]}`).join('\n') : 'You have not submitted an application yet. Open the Grant tab to find one.';
+  if (/document|upload|require/.test(t)) { const g = apps[0] && gid(apps[0].grantId); return 'Documents usually needed: ' + (g ? g.requiredDocs : ['a valid ID', 'proof of address']).join(', ') + '.'; }
+  if (/deadline|close/.test(t)) { const next = db.grants.filter(isOpen).sort((a, b) => new Date(a.deadline) - new Date(b.deadline))[0]; return next ? `The next deadline is ${next.title} on ${fdate(next.deadline)}.` : 'There are no open grants right now.'; }
+  return 'Thanks for your message. A grant officer will reply shortly.';
+}
+function autoReply(cid, text) {
+  ui.typing = cid; refreshChat();
+  setTimeout(() => {
+    ui.typing = null; const c = db.convs.find(x => x.id === cid); if (!c) return;
+    c.messages.push({ id: uid('m'), from: 'staff', text: botText(c, text), auto: true, at: now(), read: false }); save();
+    const u = me(); const p = route();
+    if (u && p[0] === 'chat' && p[1] === cid) { c.messages.forEach(m => { m.read = true; }); save(); }
+    refreshChat();
+  }, 900);
+}
+
+/* ---------- applicant: account ---------- */
+function vAccount() {
+  const u = me(), n = u.notif;
+  const tog = (k, l) => `<label class="toggle"><span>${l}</span><input type="checkbox" data-change="notif" data-key="${k}" ${n[k] ? 'checked' : ''}></label>`;
+  return layout(`<div class="page-title"><h1>Account</h1></div><div class="stack">
+    <div class="card"><div class="row">${avatar(u, 'lg')}<div class="grow"><h3 style="margin:0">${esc(u.name)}</h3><small class="muted">${esc(u.email)}<br>${esc(u.phone)}</small><br><label class="btn ghost sm" style="display:inline-flex;margin-top:8px;cursor:pointer">Change photo<input type="file" hidden accept="image/*" data-change="photo"></label></div></div>
+      <form data-form="profile" style="margin-top:14px"><div class="grid g2"><div class="field"><label>Full name</label><input class="input" name="name" value="${esc(u.name)}" required></div><div class="field"><label>Phone</label><input class="input" name="phone" value="${esc(u.phone)}" required></div></div>
+      <div class="field"><label>Email (cannot be changed)</label><input class="input" value="${esc(u.email)}" disabled></div><button class="btn sm">Save profile</button></form></div>
+    <div class="card"><h3>Personal information</h3><form data-form="personal"><div class="grid g2">
+      <div class="field"><label>Date of birth</label><input class="input" type="date" name="dob" value="${esc(u.dob)}"></div>
+      <div class="field"><label>Gender</label><select name="gender">${opts(['Female', 'Male', 'Other'], u.gender, 'Select')}</select></div>
+      <div class="field"><label>State</label><select name="state">${opts(STATES, u.state, 'Select state')}</select></div>
+      <div class="field"><label>Country</label><input class="input" name="country" value="${esc(u.country)}"></div></div>
+      <div class="field"><label>Address</label><input class="input" name="address" value="${esc(u.address)}"></div>
+      <div class="field"><label>Interest</label><select name="interest">${opts(CATS, u.interest, 'Select category')}</select></div>
+      <div class="field"><label>ID number (NIN) ${u.idNumber ? `<small class="muted">saved: •••••${esc(u.idNumber.slice(-4))}</small>` : ''}</label><input class="input" type="password" name="idNumber" inputmode="numeric" placeholder="${u.idNumber ? 'Leave blank to keep current' : '11-digit NIN'}" autocomplete="off"></div>
+      <button class="btn sm">Save personal info</button></form></div>
+    <div class="card"><h3>Bank details</h3><form data-form="bank"><div class="grid g2">
+      <div class="field"><label>Bank name</label><select name="bankName" required>${opts(BANKS, u.bank.bankName, 'Select bank')}</select></div>
+      <div class="field"><label>Account number</label><input class="input" name="accountNumber" inputmode="numeric" pattern="[0-9]{10}" value="${esc(u.bank.accountNumber)}" required></div></div>
+      <div class="field"><label>Account name</label><input class="input" name="accountName" value="${esc(u.bank.accountName)}" required></div><button class="btn sm">Save bank details</button></form></div>
+    <div class="card" id="docs"><h3>Documents</h3>${u.docs.length ? u.docs.map(d => `<div class="docrow"><span class="ico li" style="border:0;padding:0">${icon('file')}</span><div class="grow"><b>${esc(d.kind)}</b><br><small class="muted">${esc(d.name)} · ${fdate(d.at)}</small></div>
+        <button class="btn ghost sm" data-act="viewDoc" data-id="${d.id}">View</button><label class="btn ghost sm" style="cursor:pointer">Replace<input type="file" hidden accept="image/*,.pdf" data-change="docReplace" data-id="${d.id}"></label><button class="btn danger sm" data-act="delDoc" data-id="${d.id}">Delete</button></div>`).join('') : '<p class="muted">No documents uploaded.</p>'}
+      <form data-form="docUpload" class="row wrap" style="margin-top:12px"><select name="kind" style="width:auto">${opts(['National ID', 'Proof of address', 'Business registration', 'Bank statement', 'Other'])}</select><input type="file" name="file" accept="image/*,.pdf" required><button class="btn sm">Upload</button></form></div>
+    <div class="card"><h3>Notification settings</h3>${tog('push', 'Push notifications')}${tog('email', 'Email notifications')}${tog('sms', 'SMS notifications')}</div>
+    <div class="card"><h3>Privacy and security</h3><form data-form="password"><div class="grid g2"><div class="field"><label>Current password</label><input class="input" type="password" name="cur" required></div><div class="field"><label>New password</label><input class="input" type="password" name="pass" minlength="6" required></div></div><button class="btn sm">Change password</button></form>
+      <label class="toggle" style="margin-top:10px"><span>2-step verification <small class="muted">(needs backend, coming soon)</small></span><input type="checkbox" disabled></label>
+      <button class="btn danger sm" style="margin-top:10px" data-act="deleteAccount">Delete account</button></div>
+    <div class="card"><h3>App settings</h3><div class="toggle"><span>Language</span><b>English</b></div><div class="toggle"><span>Theme</span><select data-change="theme" style="width:auto">${[['light', 'Light'], ['dark', 'Dark'], ['auto', 'Match device']].map(([v, l]) => `<option value="${v}" ${theme() === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div><div class="toggle"><span>App version</span><b>1.0.0 MVP</b></div></div>
+    <div class="card"><h3>Support</h3><div class="row wrap"><button class="btn ghost sm" data-act="help">Help Center</button><button class="btn ghost sm" data-act="contact">Contact Us</button><button class="btn ghost sm" data-act="terms">Terms &amp; Privacy</button></div></div>
+    <button class="btn danger block" data-act="logout">${icon('logout')} Log out</button></div>`, 'account');
+}
+
+/* ---------- admin views ---------- */
+function vAdminHome() {
+  const apps = db.apps.filter(a => a.status !== 'DRAFT'), cnt = s => apps.filter(a => s.includes(a.status)).length;
+  const recent = apps.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)).slice(0, 6);
+  return layout(`<div class="page-title"><h1>Admin dashboard</h1><button class="btn ghost sm" data-act="logout">${icon('logout')} Log out</button></div><div class="stack">
+    <div class="grid kpis"><div class="card kpi"><b>${db.users.filter(u => u.role === 'APPLICANT').length}</b><span>Applicants</span></div><div class="card kpi"><b>${db.grants.filter(isOpen).length}</b><span>Open grants</span></div>
+      <div class="card kpi"><b>${apps.length}</b><span>Applications</span></div><div class="card kpi"><b style="color:var(--warn)">${cnt(['SUBMITTED', 'IN_REVIEW'])}</b><span>Awaiting review</span></div>
+      <div class="card kpi"><b style="color:var(--ok)">${cnt(['APPROVED'])}</b><span>Approved</span></div><div class="card kpi"><b style="color:var(--bad)">${cnt(['REJECTED'])}</b><span>Rejected</span></div>
+      <div class="card kpi"><b>${cnt(['MORE_INFO_NEEDED'])}</b><span>Need more info</span></div><div class="card kpi"><b>${totalUnread(me())}</b><span>Unread messages</span></div></div>
+    <div class="card"><div class="row between"><h3>Recent applications</h3><a href="#/admin/applications">View all</a></div>${recent.length ? recent.map(a => { const g = gid(a.grantId) || {}, ap = userById(a.userId) || {}; return `<a class="li listlink" href="#/admin/applications/${a.id}"><div class="grow"><b>${esc(ap.name)}</b><br><small class="muted">${esc(g.title)} · ${ago(a.submittedAt)}</small></div>${badge(a.status)}</a>`; }).join('') : '<p class="muted">No applications yet.</p>'}</div></div>`, 'admin');
+}
+function vAdminGrants() {
+  return layout(`<div class="page-title"><h1>Grants</h1><a class="btn sm" href="#/admin/grants/new">${icon('plus')} New grant</a></div>
+    <div class="stack">${db.grants.map(g => `<div class="card"><div class="row between wrap"><div class="grow"><b>${esc(g.title)}</b><br><small class="muted">${esc(g.category)} · ${money(g.amount)} · closes ${fdate(g.deadline)} · ${db.apps.filter(a => a.grantId === g.id && a.status !== 'DRAFT').length} application(s)</small></div>
+      <span class="badge ${g.status === 'OPEN' ? 'green' : g.status === 'CLOSED' ? 'red' : 'gray'}">${g.status}</span></div>
+      <div class="row wrap" style="margin-top:10px"><a class="btn ghost sm" href="#/admin/grants/${g.id}/edit">Edit</a><button class="btn ghost sm" data-act="toggleGrant" data-id="${g.id}">${g.status === 'OPEN' ? 'Close' : 'Open'}</button><button class="btn danger sm" data-act="deleteGrant" data-id="${g.id}">Delete</button></div></div>`).join('') || '<div class="card empty">No grants yet.</div>'}</div>`, 'grants');
+}
+const fieldsToText = f => (f || []).map(x => [x.label, x.type, x.required ? 'required' : 'optional', (x.options || []).join(',')].join(' | ')).join('\n');
+function vGrantForm(id) {
+  const g = id === 'new' ? { title: '', org: '', category: 'Business', amount: '', deadline: dayOffset(30), location: 'Nationwide', eligibility: 'Individuals', eligibleStates: [], desc: '', criteria: [], requiredDocs: [], steps: [], fields: [], featured: false, status: 'OPEN', awards: '' } : gid(id);
+  if (!g) return vNotFound();
+  const lines = a => esc((a || []).join('\n'));
+  return layout(`<div class="page-title"><div class="row"><a class="iconbtn" href="#/admin/grants">${icon('back')}</a><h1>${id === 'new' ? 'New grant' : 'Edit grant'}</h1></div></div>
+    <form class="card" data-form="grantSave"><input type="hidden" name="id" value="${id === 'new' ? '' : g.id}">
+      <div class="grid g2"><div class="field"><label>Title</label><input class="input" name="title" value="${esc(g.title)}" required></div><div class="field"><label>Organization</label><input class="input" name="org" value="${esc(g.org)}" required></div>
+      <div class="field"><label>Category</label><select name="category">${opts(CATS, g.category)}</select></div><div class="field"><label>Amount (₦)</label><input class="input" type="number" min="0" name="amount" value="${esc(g.amount)}" required></div>
+      <div class="field"><label>Deadline</label><input class="input" type="date" name="deadline" value="${esc(String(g.deadline).slice(0, 10))}" required></div><div class="field"><label>Who can apply</label><select name="eligibility">${opts(['Individuals', 'Registered businesses'], g.eligibility)}</select></div>
+      <div class="field"><label>Eligible states (comma separated, blank = nationwide)</label><input class="input" name="states" value="${esc(g.eligibleStates.join(', '))}"></div><div class="field"><label>Cover image URL (optional)</label><input class="input" name="coverUrl" value="${esc(g.coverUrl || '')}"></div></div>
+      <div class="field"><label>Description</label><textarea name="desc" required>${esc(g.desc)}</textarea></div>
+      <div class="grid g2"><div class="field"><label>Eligibility criteria (one per line)</label><textarea name="criteria">${lines(g.criteria)}</textarea></div><div class="field"><label>Required documents (one per line)</label><textarea name="requiredDocs">${lines(g.requiredDocs)}</textarea></div></div>
+      <div class="field"><label>How to apply steps (one per line)</label><textarea name="steps">${lines(g.steps)}</textarea></div>
+      <div class="field"><label>Application form questions</label><textarea name="fields" style="min-height:130px">${esc(fieldsToText(g.fields))}</textarea><small class="muted">One per line: Label | type | required or optional | options. Types: text, textarea, number, date, select, checkbox. Example: Farm type | select | required | Crop,Livestock</small></div>
+      <div class="row wrap"><label class="row" style="font-weight:400;margin:0"><input type="checkbox" name="featured" ${g.featured ? 'checked' : ''}> Featured</label><select name="status" style="width:auto">${opts(['OPEN', 'DRAFT', 'CLOSED'], g.status)}</select></div>
+      <button class="btn block" style="margin-top:14px">Save grant</button></form>`, 'grants');
+}
+function vAdminApps() {
+  const f = ui.af; let list = db.apps.filter(a => a.status !== 'DRAFT'); if (f !== 'ALL') list = list.filter(a => a.status === f);
+  list.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  return layout(`<div class="page-title"><h1>Applications</h1></div>
+    <div class="chips">${['ALL', 'SUBMITTED', 'IN_REVIEW', 'MORE_INFO_NEEDED', 'APPROVED', 'REJECTED'].map(s => `<button class="chip ${f === s ? 'on' : ''}" data-act="af" data-v="${s}">${s === 'ALL' ? 'All' : STATUS[s][0]}</button>`).join('')}</div>
+    <div class="card" style="margin-top:10px">${list.length ? list.map(a => { const g = gid(a.grantId) || {}, ap = userById(a.userId) || {}; return `<a class="li listlink" href="#/admin/applications/${a.id}">${avatar(ap, 'sm')}<div class="grow"><b>${esc(ap.name)}</b><br><small class="muted">${esc(g.title)} · ${esc(a.id)} · ${ago(a.submittedAt)}</small></div>${badge(a.status)}</a>`; }).join('') : '<p class="empty">No applications in this view.</p>'}</div>`, 'apps');
+}
+function vAdminAppDetail(id) {
+  const a = db.apps.find(x => x.id === id); if (!a) return vNotFound();
+  const g = gid(a.grantId) || { title: 'Grant removed', fields: [], requiredDocs: [] }, ap = userById(a.userId) || {};
+  return layout(`<div class="page-title"><div class="row"><a class="iconbtn" href="#/admin/applications">${icon('back')}</a><h1>Review application</h1></div></div><div class="stack">
+    <div class="card"><div class="row between"><div class="row">${avatar(ap)}<div><b>${esc(ap.name)}</b><br><small class="muted">${esc(ap.email)} · ${esc(ap.phone)}</small></div></div>${badge(a.status)}</div><p class="muted" style="margin:10px 0 0">${esc(g.title)} · ${money(g.amount)} · ${esc(a.id)}</p></div>
+    <div class="grid g2"><div class="card"><h3>Personal</h3><p class="muted">${esc(a.personal.fullName)}<br>${esc(a.personal.phone)}<br>DOB: ${esc(a.personal.dob)}<br>${esc(a.personal.address)}, ${esc(a.personal.state)}</p></div>
+      <div class="card"><h3>Bank</h3><p class="muted">${esc(a.bank.bankName)}<br>${esc(a.bank.accountNumber)}<br>${esc(a.bank.accountName)}</p></div></div>
+    <div class="card"><h3>Answers</h3>${g.fields.length ? g.fields.map(f => `<p style="margin:0 0 8px"><small class="muted">${esc(f.label)}</small><br>${esc(a.answers[f.id] || '-')}</p>`).join('') : '<p class="muted">No questions.</p>'}</div>
+    <div class="card"><h3>Documents</h3>${a.docs.length ? a.docs.map((d, i) => `<div class="docrow"><div class="grow"><b>${esc(d.req)}</b><br><small class="muted">${esc(d.name)}</small></div><button class="btn ghost sm" data-act="viewAppDoc" data-id="${a.id}" data-i="${i}">View</button></div>`).join('') : '<p class="muted">No documents uploaded.</p>'}</div>
+    <div class="card"><h3>History</h3>${timeline(a)}</div>
+    <div class="card"><h3>Decision</h3><div class="field"><label>Note to applicant</label><textarea id="decNote" placeholder="Reason or what is missing"></textarea></div>
+      <div class="row wrap"><button class="btn ok" data-act="decide" data-id="${a.id}" data-s="APPROVED">Approve</button><button class="btn warn" data-act="decide" data-id="${a.id}" data-s="MORE_INFO_NEEDED">Request info</button><button class="btn danger" data-act="decide" data-id="${a.id}" data-s="REJECTED">Reject</button>${a.status === 'SUBMITTED' ? `<button class="btn ghost" data-act="decide" data-id="${a.id}" data-s="IN_REVIEW">Start review</button>` : ''}</div></div></div>`, 'apps');
+}
+const vNotFound = () => layout('<div class="card empty">Page not found.<br><br><a class="btn" href="#/">Go home</a></div>', '');
+
+/* ---------- router ---------- */
+const route = () => (location.hash.replace(/^#/, '') || '/').split('?')[0].split('/').filter(Boolean);
+const PUBLIC = ['login', 'register', 'forgot'];
+function render() {
+  const u = me(), p = route(), root = $('#app');
+  applyTheme();
+  if (!u) { if (!PUBLIC.includes(p[0])) { location.hash = '#/login'; return; } root.innerHTML = vAuth(p[0]); return; }
+  const admin = u.role === 'ADMIN', home = admin ? '#/admin' : '#/dashboard';
+  if (!p.length || PUBLIC.includes(p[0]) || (admin !== (p[0] === 'admin'))) { location.hash = home; return; }
+  let html = '';
+  if (!admin) {
+    switch (p[0]) {
+      case 'dashboard': html = vDashboard(); break;
+      case 'notifications': html = vNotifications(); break;
+      case 'grants': html = p[1] ? vGrantDetail(p[1]) : vGrants(); break;
+      case 'apply': html = vApply(p[1]); break;
+      case 'applications': html = p[1] ? vAppDetail(p[1]) : vApplications(); break;
+      case 'chat': html = vChat(p[1], '#/chat', 'chat'); break;
+      case 'account': html = vAccount(); break;
+      default: html = vNotFound();
+    }
+  } else {
+    switch (p[1]) {
+      case undefined: html = vAdminHome(); break;
+      case 'grants': html = p[2] ? vGrantForm(p[3] === 'edit' ? p[2] : 'new') : vAdminGrants(); break;
+      case 'applications': html = p[2] ? vAdminAppDetail(p[2]) : vAdminApps(); break;
+      case 'chat': html = vChat(p[2], '#/admin/chat', 'chat'); break;
+      default: html = vNotFound();
+    }
+  }
+  if (html === '') return; // a redirect happened
+  const full = location.hash;
+  root.innerHTML = html;
+  if (full !== ui.lastHash) { window.scrollTo(0, 0); ui.lastHash = full; }
+  const m = $('#msgs'); if (m) m.scrollTop = m.scrollHeight;
+  updateBadges();
+}
+
+/* ---------- actions (click) ---------- */
+const A = {
+  logout() { sessionStorage.removeItem('gc_uid'); ui.draft = null; location.hash = '#/login'; render(); },
+  demoUser() { sessionStorage.setItem('gc_uid', 'u_demo'); location.hash = '#/dashboard'; render(); },
+  demoAdmin() { sessionStorage.setItem('gc_uid', 'u_admin'); location.hash = '#/admin'; render(); },
+  closeModal,
+  dashCat(t) { ui.dashCat = t.dataset.v; render(); },
+  gfCat(t) { ui.gf.cat = t.dataset.v; render(); },
+  gfReset() { ui.gf = { q: '', cat: 'All', loc: '', sort: 'newest', min: '', elig: '' }; render(); },
+  toDocs() { setTimeout(() => { const d = $('#docs'); if (d && d.scrollIntoView) d.scrollIntoView(); }, 60); },
+  applyBack() { ui.step = Math.max(0, ui.step - 1); render(); },
+  chatInfo() { const el = $('#chatinfo'); if (el) el.classList.toggle('hide'); },
+  quick(t) { $('#chatText').value = t.dataset.text; $('#chatForm').requestSubmit(); },
+  rmAtt(t, e) { e.preventDefault(); ui.att = null; refreshChat(); },
+  chatApp(t) {
+    const u = me(), a = db.apps.find(x => x.id === t.dataset.id); if (!a) return;
+    let c = db.convs.find(x => x.applicationId === a.id);
+    if (!c) { c = { id: uid('c'), userId: u.id, type: 'OFFICER', name: 'Grant Officer', applicationId: a.id, messages: [{ id: uid('m'), from: 'staff', text: `Hello! How can I help with your application ${a.id}?`, at: now(), read: false }] }; db.convs.push(c); save(); }
+    location.hash = '#/chat/' + c.id;
+  },
+  viewDoc(t) { const d = me().docs.find(x => x.id === t.dataset.id); if (d) openDataUrl(d.dataUrl); },
+  delDoc(t) { if (!confirm('Delete this document?')) return; const u = me(); u.docs = u.docs.filter(x => x.id !== t.dataset.id); save(); render(); toast('Document deleted'); },
+  viewAppDoc(t) { const a = db.apps.find(x => x.id === t.dataset.id); if (a && a.docs[+t.dataset.i]) openDataUrl(a.docs[+t.dataset.i].dataUrl); },
+  af(t) { ui.af = t.dataset.v; render(); },
+  toggleGrant(t) { const g = gid(t.dataset.id); g.status = g.status === 'OPEN' ? 'CLOSED' : 'OPEN'; save(); render(); },
+  deleteGrant(t) { if (!confirm('Delete this grant? Related applications stay on record.')) return; db.grants = db.grants.filter(g => g.id !== t.dataset.id); save(); render(); toast('Grant deleted'); },
+  decide(t) {
+    const a = db.apps.find(x => x.id === t.dataset.id), s = t.dataset.s, note = ($('#decNote').value || '').trim();
+    if (['MORE_INFO_NEEDED', 'REJECTED'].includes(s) && !note) { toast('Please add a note for the applicant.'); return; }
+    a.status = s; a.note = note; a.history.push({ status: s, at: now(), note: note || STATUS[s][0] });
+    const g = gid(a.grantId) || { title: 'your grant' };
+    addActivity(a.userId, `Your application for ${g.title} is now: ${STATUS[s][0]}`);
+    const u = userById(a.userId); ensureConvs(u);
+    const c = db.convs.find(x => x.userId === a.userId && x.type === 'OFFICER' && !x.applicationId) || db.convs.find(x => x.userId === a.userId);
+    c.messages.push({ id: uid('m'), from: 'staff', text: `Update on ${g.title} (${a.id}): ${STATUS[s][0]}.${note ? ' ' + note : ''}`, at: now(), read: false });
+    save(); render(); toast('Decision saved and applicant notified');
+  },
+  deleteAccount() {
+    if (!confirm('Delete your account and all your data? This cannot be undone.')) return;
+    const u = me(); db.users = db.users.filter(x => x.id !== u.id); db.apps = db.apps.filter(a => a.userId !== u.id); db.convs = db.convs.filter(c => c.userId !== u.id); db.activity = db.activity.filter(a => a.userId !== u.id);
+    save(); A.logout();
+  },
+  help() { openModal(`<h3>Help Center</h3><p><b>How do I apply?</b><br>Open the Grant tab, pick a grant, tap Apply and complete the steps.</p><p><b>How long does review take?</b><br>Usually 5 to 7 working days. Track progress under My applications.</p><p><b>Can I edit after submitting?</b><br>Only if an officer requests more information.</p><button class="btn block" data-act="closeModal">Close</button>`); },
+  contact() { openModal(`<h3>Contact us</h3><p>Email: support@grantconnect.example<br>Phone: +234 000 000 0000<br>Or use the Chat tab to message the Support Team.</p><p class="muted"><small>Replace these placeholder details with your real contact info.</small></p><button class="btn block" data-act="closeModal">Close</button>`); },
+  terms() { openModal(`<h3>Terms &amp; Privacy</h3><p class="muted">Sample text. Replace with your legal terms before launch. We collect only the information needed to process grant applications, and we do not sell your data.</p><button class="btn block" data-act="closeModal">Close</button>`); }
+};
+
+/* ---------- forms (submit) ---------- */
+const F = {
+  login(f, fd) {
+    const email = String(fd.get('email')).trim().toLowerCase(), u = db.users.find(x => x.email.toLowerCase() === email);
+    if (!u || u.pass !== hash(String(fd.get('pass')))) { toast('Wrong email or password'); return; }
+    sessionStorage.setItem('gc_uid', u.id); location.hash = u.role === 'ADMIN' ? '#/admin' : '#/dashboard'; render();
+  },
+  register(f, fd) {
+    const email = String(fd.get('email')).trim().toLowerCase();
+    if (db.users.some(x => x.email.toLowerCase() === email)) { toast('That email is already registered'); return; }
+    if (fd.get('pass') !== fd.get('pass2')) { toast('Passwords do not match'); return; }
+    const u = newUser({ name: String(fd.get('name')).trim(), email, phone: String(fd.get('phone')).trim(), pass: hash(String(fd.get('pass'))) });
+    u.bank.accountName = u.name; db.users.push(u); ensureConvs(u); addActivity(u.id, 'Welcome to GrantConnect! Complete your profile before applying.'); save();
+    sessionStorage.setItem('gc_uid', u.id); toast('Account created. Complete your profile before applying.'); location.hash = '#/account'; render();
+  },
+  forgot(f, fd) {
+    const u = db.users.find(x => x.email.toLowerCase() === String(fd.get('email')).trim().toLowerCase());
+    if (!u) { toast('No account with that email'); return; }
+    u.pass = hash(String(fd.get('pass'))); save(); toast('Password reset. Please log in.'); location.hash = '#/login';
+  },
+  dashSearch(f, fd) { ui.gf = { q: String(fd.get('q')).trim(), cat: 'All', loc: '', sort: 'newest', min: '', elig: '' }; location.hash = '#/grants'; render(); },
+  applyStep(f, fd) {
+    const u = me(), a = ui.draft, g = gid(a.grantId), steps = stepsFor(g), s = fd.get('__step');
+    if (s === 'personal') a.personal = { fullName: fd.get('fullName'), phone: fd.get('phone'), dob: fd.get('dob'), address: fd.get('address'), state: fd.get('state') };
+    if (s === 'bank') a.bank = { bankName: fd.get('bankName'), accountNumber: fd.get('accountNumber'), accountName: fd.get('accountName') };
+    if (s === 'questions') g.fields.forEach(x => { a.answers[x.id] = x.type === 'checkbox' ? (fd.get(x.id) ? 'Yes' : 'No') : String(fd.get(x.id) || ''); });
+    if (s === 'documents') { const miss = g.requiredDocs.filter(r => !a.docs.find(d => d.req === r)); if (miss.length) { toast('Upload: ' + miss[0]); return; } }
+    if (s === 'review') {
+      const miss = g.requiredDocs.filter(r => !a.docs.find(d => d.req === r)); if (miss.length) { toast('Missing document: ' + miss[0]); return; }
+      const resub = a.status === 'MORE_INFO_NEEDED';
+      a.status = 'SUBMITTED'; a.submittedAt = now(); a.history.push({ status: 'SUBMITTED', at: now(), note: resub ? 'Application updated and resubmitted' : 'Application submitted' });
+      addActivity(u.id, `You applied for ${g.title}`); persistDraft(a); ui.draft = null; toast('Application submitted!'); location.hash = '#/applications/' + a.id; render(); return;
+    }
+    persistDraft(a); ui.step = Math.min(steps.length - 1, ui.step + 1); render();
+  },
+  chatSend(f, fd) {
+    const u = me(), c = convsFor(u).find(x => x.id === fd.get('cid')), text = String(fd.get('text')).trim();
+    if (!c || (!text && !ui.att)) return;
+    c.messages.push({ id: uid('m'), from: viewerRole(u), text, att: ui.att || undefined, at: now(), read: false });
+    ui.att = null; f.reset(); save(); refreshChat();
+    if (u.role !== 'ADMIN') autoReply(c.id, text);
+  },
+  profile(f, fd) { const u = me(); u.name = String(fd.get('name')).trim(); u.phone = String(fd.get('phone')).trim(); save(); render(); toast('Profile saved'); },
+  personal(f, fd) {
+    const u = me(); ['dob', 'gender', 'state', 'country', 'address', 'interest'].forEach(k => { u[k] = String(fd.get(k) || ''); });
+    const id = String(fd.get('idNumber') || '').trim(); if (id) u.idNumber = id; // real backend: encrypt at rest
+    save(); render(); toast('Personal info saved');
+  },
+  bank(f, fd) { me().bank = { bankName: fd.get('bankName'), accountNumber: fd.get('accountNumber'), accountName: fd.get('accountName') }; save(); toast('Bank details saved'); },
+  docUpload(f, fd) {
+    const file = fd.get('file'), kind = fd.get('kind');
+    readFile(file, d => { me().docs.push({ id: uid('d'), kind, name: d.name, dataUrl: d.dataUrl, at: now() }); if (save()) { render(); toast('Document uploaded'); } });
+  },
+  password(f, fd) {
+    const u = me(); if (u.pass !== hash(String(fd.get('cur')))) { toast('Current password is wrong'); return; }
+    u.pass = hash(String(fd.get('pass'))); save(); f.reset(); toast('Password changed');
+  },
+  grantSave(f, fd) {
+    const lines = k => String(fd.get(k) || '').split('\n').map(x => x.trim()).filter(Boolean);
+    const id = fd.get('id'), old = id ? gid(id) : null, TYPES = ['text', 'textarea', 'number', 'date', 'select', 'checkbox'];
+    const fields = lines('fields').map((l, i) => {
+      const p = l.split('|').map(x => x.trim()), prev = old && old.fields.find(x => x.label === p[0]);
+      return { id: prev ? prev.id : uid('f'), label: p[0], type: TYPES.includes((p[1] || '').toLowerCase()) ? p[1].toLowerCase() : 'text', required: (p[2] || 'required').toLowerCase() !== 'optional', options: p[3] ? p[3].split(',').map(x => x.trim()).filter(Boolean) : [] };
+    });
+    const states = String(fd.get('states') || '').split(',').map(x => x.trim()).filter(Boolean);
+    const g = Object.assign(old || { id: uid('g'), createdAt: now(), awards: null }, {
+      title: fd.get('title'), org: fd.get('org'), category: fd.get('category'), amount: +fd.get('amount'), deadline: new Date(fd.get('deadline') + 'T23:59:00').toISOString(),
+      eligibility: fd.get('eligibility'), eligibleStates: states, location: states.length === 1 ? states[0] : states.length ? 'Multiple states' : 'Nationwide', coverUrl: fd.get('coverUrl') || '', desc: fd.get('desc'),
+      criteria: lines('criteria'), requiredDocs: lines('requiredDocs'), steps: lines('steps'), fields, featured: !!fd.get('featured'), status: fd.get('status')
+    });
+    if (!old) db.grants.push(g); save(); toast('Grant saved'); location.hash = '#/admin/grants';
+  }
+};
+
+/* ---------- input / change handlers ---------- */
+const I = {
+  gf(el) { ui.gf[el.dataset.key] = el.value; const l = $('#glist'); if (l) l.innerHTML = gListHtml(); },
+  chatSearch(el) { ui.chatQ = el.value; const l = $('#chatlist'); const u = me(); if (l) { const p = route(); l.innerHTML = chatListHtml(u, p[p.length - 1], u.role === 'ADMIN' ? '#/admin/chat' : '#/chat'); } }
+};
+const C = {
+  gf(el) { I.gf(el); },
+  theme(el) { localStorage.setItem('gc_theme', el.value); applyTheme(); },
+  notif(el) { me().notif[el.dataset.key] = el.checked; save(); toast('Notification settings saved'); },
+  photo(el) { readFile(el.files[0], d => { me().photo = d.dataUrl; if (save()) { render(); toast('Photo updated'); } }); },
+  docReplace(el) { readFile(el.files[0], d => { const doc = me().docs.find(x => x.id === el.dataset.id); Object.assign(doc, { name: d.name, dataUrl: d.dataUrl, at: now() }); if (save()) { render(); toast('Document replaced'); } }); },
+  applyDoc(el) { const a = ui.draft; readFile(el.files[0], d => { a.docs = a.docs.filter(x => x.req !== el.dataset.req).concat({ req: el.dataset.req, name: d.name, dataUrl: d.dataUrl, type: d.type }); persistDraft(a); render(); toast('Uploaded'); }); },
+  chatAttach(el) { readFile(el.files[0], d => { ui.att = d; const ac = $('#attachchip'); if (ac) ac.innerHTML = attachChip(); }); }
+};
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t) { if (e.target.id === 'overlay') closeModal(); return; }
+  const fn = A[t.dataset.act]; if (fn) fn(t, e);
+});
+document.addEventListener('submit', e => {
+  const f = e.target.closest('form[data-form]'); if (!f) return; e.preventDefault();
+  const fn = F[f.dataset.form]; if (fn) fn(f, new FormData(f));
+});
+document.addEventListener('input', e => { const t = e.target.closest('[data-input]'); if (t && I[t.dataset.input]) I[t.dataset.input](t); });
+document.addEventListener('change', e => { const t = e.target.closest('[data-change]'); if (t && C[t.dataset.change]) C[t.dataset.change](t); });
+window.addEventListener('hashchange', render);
+window.addEventListener('storage', e => {
+  if (e.key !== KEY) return;
+  db = loadDb();
+  if (ui.draft && ui.draft.id) { const x = db.apps.find(a => a.id === ui.draft.id); if (x) ui.draft = x; }
+  const p = route(); const u = me();
+  if (!u) return;
+  if (p[p.length - 2] === 'chat' || p[p.length - 1] === 'chat') { refreshChat(); return; }
+  updateBadges();
+  const live = ['dashboard', 'applications', 'notifications'];
+  if (live.includes(p[0]) || (p[0] === 'admin' && (!p[1] || (p[1] === 'applications' && !p[2])))) render();
+});
+if (window.matchMedia) { try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme); } catch (e) { /* ignore */ } }
+if (!location.hash) location.hash = '#/login';
+render();
+
+</script>
+</body>
+</html>
